@@ -10,6 +10,7 @@ Features
 - Configure field names
 - Using custom field names if necessary
 - Configure tag names
+- Optimized to work with big data sets
 
 How it works
 ============
@@ -23,6 +24,11 @@ can then use this data to sync it with your application storage
 `push()` will allow you to put your local users to remote. This method is smart
 enought to update contacts if they're already present at Infusionsoft and to
 skip if nothing was changed.
+
+Under the hood there is a `pull()` method call inside the `push()` method. This
+is done to minify amount of API calls and to speed-up the process on big data
+sets. However when you push one contact `pull()` is skipped to prevent
+redundancy.
 
 Examples
 ========
