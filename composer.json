@@ -1,0 +1,23 @@
+{
+    "name": "wildsurfer/infusionsoft-sync",
+    "keywords": ["infusionsoft","isdk"],
+    "license": "MIT",
+    "authors": [
+    {
+        "name": "Ivan Kuznetsov",
+        "email": "kuzma.wm@gmail.com",
+        "role": "Developer"
+    }
+    ],
+    "require":{
+        "infusionsoft/php-isdk": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.1"
+    },
+    "autoload":{
+        "psr-0":{
+            "Wildsurfer\\Infusionsoft\\":"src"
+        }
+    }
+}
