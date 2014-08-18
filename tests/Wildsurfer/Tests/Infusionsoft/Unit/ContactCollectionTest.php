@@ -41,6 +41,31 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * `count()` is for calculating total amount of contacts in collection
+     */
+    public function countTest()
+    {
+        $c = new ContactCollection();
+
+        $expected  = $c->count();
+        $this->assertCount(0, $expected);
+
+        $contact1 = array(
+            'FirstName' => 'FirstName1',
+            'Email' => 'test1@test.com'
+        );
+        $contact2 = array(
+            'FirstName' => 'FirstName2',
+            'Email' => 'test2@test.com'
+        );
+        $c->create($contact1);
+        $c->create($contact2);
+
+        $expected  = $c->count();
+        $this->assertCount(2, $expected);
+    }
+
+    /**
      * `create()` function should add Contact to end of stack
      */
     public function createFromObjectTest()
