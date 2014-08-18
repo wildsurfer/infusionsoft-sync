@@ -40,7 +40,8 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     {
         $options = array(
             'appname' => $this->testConfig['appname'],
-            'apikey' =>  $this->testConfig['apikey']
+            'apikey' =>  $this->testConfig['apikey'],
+            'fields' =>  $this->testConfig['fields']
         );
         $i = new Sync($options);
         $expected = $i->getConfig();
@@ -53,6 +54,9 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     public function testConfigTags()
     {
         $options = array(
+            'appname' => $this->testConfig['appname'],
+            'apikey' =>  $this->testConfig['apikey'],
+            'fields' =>  $this->testConfig['fields'],
             'tags' => $this->testConfig['tags']
         );
         $i = new Sync($options);
@@ -67,6 +71,8 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     public function testConfigFields()
     {
         $options = array(
+            'appname' => $this->testConfig['appname'],
+            'apikey' =>  $this->testConfig['apikey'],
             'fields' => $this->testConfig['fields']
         );
         $i = new Sync($options);

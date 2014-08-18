@@ -63,4 +63,20 @@ class ContactTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $data);
         $this->assertArrayNotHasKey('Id', $expected);
     }
+
+    /**
+     * Error message should be stored inside contact object
+     */
+    public function setErrorMessageTest()
+    {
+        $data = array(
+            'Id' => 1,
+            'FirstName' => 'FirstName'
+        );
+
+        $c = new Contact($data);
+        $c->setErrorMessage('test');
+        $expected = $c->getErrorMessage();
+        $this->assertEquals('test', $expected);
+    }
 }
