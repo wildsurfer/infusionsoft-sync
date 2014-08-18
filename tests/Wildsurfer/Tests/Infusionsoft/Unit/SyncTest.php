@@ -104,11 +104,11 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $data = array(
             array(
                 'Email' => 'test1@test.com',
-                'FirstName' = 'FirstName1'
+                'FirstName' => 'FirstName1'
             ),
             array(
                 'Email' => 'test2@test.com',
-                'FirstName' = 'FirstName2'
+                'FirstName' => 'FirstName2'
             )
         );
 
