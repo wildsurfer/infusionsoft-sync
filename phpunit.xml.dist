@@ -18,7 +18,7 @@
         <testsuite name="functional">
             <directory>./tests/Wildsurfer/Tests/Infusionsoft/Functional</directory>
         </testsuite>
-    </testsuite>
+    </testsuites>
     <filter>
         <whitelist>
             <directory>./src</directory>
