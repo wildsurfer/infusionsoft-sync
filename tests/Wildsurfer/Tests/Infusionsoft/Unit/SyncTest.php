@@ -185,7 +185,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             array(
                 'Id' => 1,
                 'Email' => 'test1@test.com',
-                'FirstName' = 'FirstName1'
+                'FirstName' => 'FirstName1'
             )
         );
 
@@ -193,7 +193,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $collection->create(array(
             'Id' => 1,
             'Email' => 'test1@test.com',
-            'FirstName' = 'FirstName1'
+            'FirstName' => 'FirstName1'
         ));
 
         $isdk = $this->getMockedIsdk($data);
@@ -220,7 +220,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     {
         $data = array(
             'Email' => 'test1@test.com',
-            'FirstName' = 'FirstName1'
+            'FirstName' => 'FirstName1'
         );
 
         $collection = new ContactCollection();
@@ -248,7 +248,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     {
         $data = array(
             'Email' => 'test1@test.com',
-            'FirstName' = 'FirstName1'
+            'FirstName' => 'FirstName1'
         );
 
         $collection = new ContactCollection();
@@ -276,7 +276,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $collection->create(array(
             'Id' => 1,
             'Email' => 'test1@test.com',
-            'FirstName' = 'FirstName1'
+            'FirstName' => 'FirstName1'
         ));
 
         $isdk = $this->getMockedIsdk($data);
