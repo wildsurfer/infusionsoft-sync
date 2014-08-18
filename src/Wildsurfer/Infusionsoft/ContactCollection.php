@@ -2,10 +2,11 @@
 
 namespace Wildsurfer\Infusionsoft;
 
-protected $stack;
 
 class ContactCollection
 {
+    protected $stack;
+
     public function create($contact = array())
     {
     }
