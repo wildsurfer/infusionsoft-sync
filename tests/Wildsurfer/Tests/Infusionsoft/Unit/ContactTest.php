@@ -60,6 +60,7 @@ class ContactTest extends \PHPUnit_Framework_TestCase
 
         $expected = (array)$c;
 
-        $this->assertEquals($expected, $c);
+        $this->assertEquals($expected, $data);
+        $this->assertArrayNotHasKey('Id', $expected);
     }
 }
