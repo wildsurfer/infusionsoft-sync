@@ -36,7 +36,7 @@ class Sync
             else if (is_array($results)) {
                 foreach ($results as $r) {
                     $c = new Client($r);
-                    $allContacts[$r->uniqueHash()]] = $c;
+                    $allContacts[$r->uniqueHash()] = $c;
                 }
             }
 
