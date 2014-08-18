@@ -15,7 +15,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             '2',
             '3'
         ),
-        'fields' = array(
+        'fields' => array(
             'Email',
             'FirstName',
             'LastName'
