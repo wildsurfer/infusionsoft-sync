@@ -2,6 +2,8 @@
 
 namespace Wildsurfer\Tests\Infusionsoft\Unit;
 
+use Wildsurfer\Infusionsoft\Contact;
+
 /**
  * ContactTest
  */

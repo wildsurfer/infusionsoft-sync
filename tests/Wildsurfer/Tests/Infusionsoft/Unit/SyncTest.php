@@ -2,8 +2,11 @@
 
 namespace Wildsurfer\Tests\Infusionsoft\Unit;
 
+use Wildsurfer\Infusionsoft\Sync;
+use Wildsurfer\Infusionsoft\ContactCollection;
+
 /**
- * InfusionsoftSyncTest
+ * SyncTest
  */
 class SyncTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,7 +28,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->i = new InfusionsoftSync($this->testConfig);
+        $this->i = new Sync($this->testConfig);
     }
 
     /**
@@ -39,7 +42,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             'appname' => $this->testConfig['appname'],
             'apikey' =>  $this->testConfig['apikey']
         );
-        $i = new InfusionsoftSync($options);
+        $i = new Sync($options);
         $expected = $i->getConfig();
         $this->assertEquals($expected, $options);
     }
@@ -52,7 +55,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $options = array(
             'tags' => $this->testConfig['tags']
         );
-        $i = new InfusionsoftSync($options);
+        $i = new Sync($options);
         $expected = $i->getConfigTags();
         $this->assertEquals($expected, $options['tags']);
     }
@@ -66,7 +69,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $options = array(
             'fields' => $this->testConfig['fields']
         );
-        $i = new InfusionsoftSync($options);
+        $i = new Sync($options);
         $expected = $i->getConfigFields();
         $this->assertEquals($expected, $options['fields']);
     }

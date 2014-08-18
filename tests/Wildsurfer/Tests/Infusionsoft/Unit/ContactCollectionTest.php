@@ -2,6 +2,9 @@
 
 namespace Wildsurfer\Tests\Infusionsoft\Unit;
 
+use Wildsurfer\Infusionsoft\Contact;
+use Wildsurfer\Infusionsoft\ContactCollection;
+
 /**
  * ContactCollectionTest
  */
