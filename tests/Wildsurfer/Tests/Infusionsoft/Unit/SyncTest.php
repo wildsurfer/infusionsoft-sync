@@ -95,7 +95,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $this->i->setIsdk($isdk);
 
         $contacts = $this->i->pull();
-        $this->assertInstanceOf('ContactCollection', $contacts);
+        $this->assertInstanceOf('Wildsurfer\Infusionsoft\ContactCollection', $contacts);
 
         $read = $contacts->read();
 
@@ -380,7 +380,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->createContact($contact);
 
-        $this->assertInstanceOf('Contact', $expected);
+        $this->assertInstanceOf('Wildsurfer\Infusionsoft\Contact', $expected);
         $this->assertEquals(true, $expected->isCreated());
     }
 
@@ -438,7 +438,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->updateContact($contact);
 
-        $this->assertInstanceOf('Contact', $expected);
+        $this->assertInstanceOf('Wildsurfer\Infusionsoft\ContactCollectionContact', $expected);
         $this->assertEquals(true, $expected->isUpdated());
     }
 
