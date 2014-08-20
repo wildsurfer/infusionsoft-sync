@@ -97,9 +97,9 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $contacts = $this->i->pull();
         $this->assertInstanceOf('Wildsurfer\Infusionsoft\ContactCollection', $contacts);
 
-        $read = $contacts->read();
-
-        $this->assertCount(count($data), count($read));
+        $i = $contacts->count();
+        $j = count($data);
+        $this->assertEquals($i, $j);
     }
 
     /**
@@ -119,23 +119,26 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $createdContact = new Contact();
         $createdContact->setIsCreated();
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactCreate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('createContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactCreate')
+            ->method('createContact')
             ->will($this->returnValue($createdContact));
 
-        $isdk = $this->getMockedIsdk($data);
-        $this->i->setIsdk($isdk);
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->never())
+            ->method('dsQuery');
+        $i->setIsdk($isdk);
 
         $collection = new ContactCollection();
         $collection->create($data);
 
-        $expected = $this->i->push($collection);
+        $expected = $i->push($collection);
 
-        $this->assertCount(1, $expected['create']->count());
+        $this->assertEquals(1, $expected['create']->count());
     }
 
     /**
@@ -156,23 +159,24 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $updatedContact = new Contact();
         $updatedContact->setIsUpdated();
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactUpdate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('updateContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactUpdate')
+            ->method('updateContact')
             ->will($this->returnValue($updatedContact));
 
-        $isdk = $this->getMockedIsdk($data);
-        $this->i->setIsdk($isdk);
+        $isdk = $this->getMockedIsdk();
+        $i->setIsdk($isdk);
 
         $collection = new ContactCollection();
         $collection->create($data);
 
-        $expected = $this->i->push($collection);
+        $expected = $i->push($collection);
 
-        $this->assertCount(1, $expected['update']->count());
+        $this->assertEquals(1, $expected['update']->count());
     }
 
     /**
@@ -194,23 +198,24 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $skippedContact = new Contact();
         $skippedContact->setIsSkipped();
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactUpdate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('updateContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactUpdate')
+            ->method('updateContact')
             ->will($this->returnValue($skippedContact));
 
-        $isdk = $this->getMockedIsdk($data);
-        $this->i->setIsdk($isdk);
+        $isdk = $this->getMockedIsdk();
+        $i->setIsdk($isdk);
 
         $collection = new ContactCollection();
         $collection->create($data);
 
-        $expected = $this->i->push($collection);
+        $expected = $i->push($collection);
 
-        $this->assertCount(1, $expected['skip']->count());
+        $this->assertEquals(1, $expected['skip']->count());
     }
 
 
@@ -231,23 +236,24 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $failedContact = new Contact();
         $failedContact->setIsFailed();
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactCreate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('createContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactCreate')
+            ->method('createContact')
             ->will($this->returnValue($failedContact));
 
-        $isdk = $this->getMockedIsdk($data);
-        $this->i->setIsdk($isdk);
+        $isdk = $this->getMockedIsdk();
+        $i->setIsdk($isdk);
 
         $collection = new ContactCollection();
         $collection->create($data);
 
-        $expected = $this->i->push($collection);
+        $expected = $i->push($collection);
 
-        $this->assertCount(1, $expected['fail']->count());
+        $this->assertEquals(1, $expected['fail']->count());
     }
 
     /**
@@ -268,23 +274,24 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $failedContact = new Contact();
         $failedContact->setIsFailed();
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactUpdate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('updateContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactUpdate')
+            ->method('updateContact')
             ->will($this->returnValue($failedContact));
 
-        $isdk = $this->getMockedIsdk($data);
-        $this->i->setIsdk($isdk);
+        $isdk = $this->getMockedIsdk();
+        $i->setIsdk($isdk);
 
         $collection = new ContactCollection();
         $collection->create($data);
 
-        $expected = $this->i->push($collection);
+        $expected = $i->push($collection);
 
-        $this->assertCount(1, $expected['fail']->count());
+        $this->assertEquals(1, $expected['fail']->count());
     }
 
     /**
@@ -300,23 +307,25 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             'FirstName' => 'FirstName1'
         ));
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactCreate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('createContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactCreate');
+            ->method('createContact')
+            ->will($this->returnValue(new Contact));
 
         $i->expects($this->never())
-            ->method('contactUpdate');
+            ->method('updateContact');
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
         $isdk->expects($this->never())
             ->method('dsQuery');
 
-        $this->i->setIsdk($isdk);
+        $i->setIsdk($isdk);
 
-        $this->i->push($collection);
+        $i->push($collection);
     }
 
 
@@ -327,30 +336,33 @@ class SyncTest extends \PHPUnit_Framework_TestCase
      */
     public function testPushOneContactUpdate()
     {
-        $collection = new ContactCollection();
-        $collection->create(array(
+        $contact = new Contact(array(
             'Id' => 1,
             'Email' => 'test1@test.com',
             'FirstName' => 'FirstName1'
         ));
+        $collection = new ContactCollection();
+        $collection->create($contact);
 
-        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\ContactCollection')
-            ->setMethods(array('contactUpdate'))
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('updateContact'))
             ->getMock();
 
         $i->expects($this->once())
-            ->method('contactUpdate');
+            ->method('updateContact')
+            ->will($this->returnValue($contact));
 
         $i->expects($this->never())
-            ->method('contactCreate');
+            ->method('createContact');
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
         $isdk->expects($this->never())
             ->method('dsQuery');
 
-        $this->i->setIsdk($isdk);
+        $i->setIsdk($isdk);
 
-        $this->i->push($collection);
+        $i->push($collection);
     }
 
 
@@ -365,7 +377,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             'FirstName' => 'FirstName1'
         ));
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
             ->method('addCon')
             ->will($this->returnValue(1));
@@ -395,17 +407,17 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             'FirstName' => 'FirstName1'
         ));
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
             ->method('addCon')
-            ->will($this->throwException(new \Exception('ooops')));
+            ->will($this->returnValue('ooops'));
 
         $this->i->setIsdk($isdk);
 
         $result = $this->i->createContact($contact);
         $expected = $result->getErrorMessage();
         $this->assertNotEmpty($expected);
-        $this->assertEquals(true, $expected->isFailed());
+        $this->assertEquals(true, $result->isFailed());
     }
 
     /**
@@ -415,6 +427,12 @@ class SyncTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdateContact()
     {
+        $dataOld = array(
+            'Id' => 1,
+            'Email' => 'test111@test.com',
+            'FirstName' => 'FirstName1'
+        );
+
         $data = array(
             'Id' => 1,
             'Email' => 'test1@test.com',
@@ -422,13 +440,13 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         );
         $contact = new Contact($data);
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
             ->method('updateCon')
             ->will($this->returnValue(1));
         $isdk->expects($this->once())
             ->method('loadCon')
-            ->will($this->returnValue($data));
+            ->will($this->returnValue($dataOld));
         $isdk->expects($this->never())
             ->method('addCon');
         $isdk->expects($this->never())
@@ -438,7 +456,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->updateContact($contact);
 
-        $this->assertInstanceOf('Wildsurfer\Infusionsoft\ContactCollectionContact', $expected);
+        $this->assertInstanceOf('Wildsurfer\Infusionsoft\Contact', $expected);
         $this->assertEquals(true, $expected->isUpdated());
     }
 
@@ -447,23 +465,31 @@ class SyncTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdateContactFail()
     {
+        $dataOld = array(
+            'Id' => 1,
+            'Email' => 'test1231@test.com',
+            'FirstName' => 'FirstName1'
+        );
         $contact = new Contact(array(
             'Id' => 1,
             'Email' => 'test1@test.com',
             'FirstName' => 'FirstName1'
         ));
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('loadCon')
+            ->will($this->returnValue($dataOld));
         $isdk->expects($this->once())
             ->method('updateCon')
-            ->will($this->throwException(new \Exception('ooops')));
+            ->will($this->returnValue('ooops'));
 
         $this->i->setIsdk($isdk);
 
         $result = $this->i->updateContact($contact);
         $expected = $result->getErrorMessage();
         $this->assertNotEmpty($expected);
-        $this->assertEquals(true, $expected->isFailed());
+        $this->assertEquals(true, $result->isFailed());
     }
 
     /**
@@ -478,7 +504,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         );
         $contact = new Contact($data);
 
-        $isdk = $this->getMockedIsdk($data);
+        $isdk = $this->getMockedIsdk();
         $isdk->expects($this->never())
             ->method('updateCon');
         $isdk->expects($this->once())
@@ -500,9 +526,11 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             ->setMethods(array('dsQuery', 'updateCon', 'addCon', 'loadCon'))
             ->getMock();
 
-        $isdk->expects($this->once())
-            ->method('dsQuery')
-            ->will($this->returnValue($response));
+        if ($response) {
+            $isdk->expects($this->once())
+                ->method('dsQuery')
+                ->will($this->returnValue($response));
+        }
 
         return $isdk;
     }

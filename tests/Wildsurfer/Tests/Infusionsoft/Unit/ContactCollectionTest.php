@@ -15,7 +15,7 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
      * `read()` function should return array of all contacts from stack. Keys are
      * hashes. For more info see `ContactTest.php` file comments
      */
-    public function readTest()
+    public function testRead()
     {
         $contact1 = array(
             'FirstName' => 'FirstName1',
@@ -33,9 +33,9 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
 
         foreach ($expected as $k => $e) {
             // Key should be a string
-            $this->assertInternalType('string', $key);
+            $this->assertInternalType('string', $k);
             // Value should be instance of `Contact` class
-            $this->assertInstanceOf('Contact', $e);
+            $this->assertInstanceOf('Wildsurfer\Infusionsoft\Contact', $e);
         }
 
     }
@@ -43,12 +43,12 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
     /**
      * `count()` is for calculating total amount of contacts in collection
      */
-    public function countTest()
+    public function testCount()
     {
         $c = new ContactCollection();
 
         $expected  = $c->count();
-        $this->assertCount(0, $expected);
+        $this->assertEquals(0, $expected);
 
         $contact1 = array(
             'FirstName' => 'FirstName1',
@@ -62,13 +62,13 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
         $c->create($contact2);
 
         $expected  = $c->count();
-        $this->assertCount(2, $expected);
+        $this->assertEquals(2, $expected);
     }
 
     /**
      * `create()` function should add Contact to end of stack
      */
-    public function createFromObjectTest()
+    public function testCreateFromObject()
     {
         $contact1 = new Contact(array(
             'FirstName' => 'FirstName1',
@@ -82,15 +82,15 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
         $c->create($contact1);
         $c->create($contact2);
 
-        $expected  = $c->read();
-        $this->assertCount(count($expected), 2);
+        $expected  = $c->count();
+        $this->assertEquals($expected, 2);
     }
 
     /**
      * `create()` function should add Contact to end of stack. If array is given
      * it should be internally coonverted to Contact object
      */
-    public function createFromArrayTest()
+    public function testCreateFromArray()
     {
         $contact1 = array(
             'FirstName' => 'FirstName1',
@@ -104,7 +104,7 @@ class ContactCollectionTest extends \PHPUnit_Framework_TestCase
         $c->create($contact1);
         $c->create($contact2);
 
-        $expected  = $c->read();
-        $this->assertCount(count($expected), 2);
+        $expected  = $c->count();
+        $this->assertEquals($expected, 2);
     }
 }
