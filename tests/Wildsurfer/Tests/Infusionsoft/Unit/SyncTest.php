@@ -355,7 +355,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * When contact is created `dsAdd` should be triggered. This method should
+     * When contact is created `addCon` should be triggered. This method should
      * return `Contact` object
      */
     public function testCreateContact()
@@ -367,12 +367,12 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $isdk = $this->getMockedIsdk($data);
         $isdk->expects($this->once())
-            ->method('dsAdd')
+            ->method('addCon')
             ->will($this->returnValue(1));
         $isdk->expects($this->never())
-            ->method('dsUpdate');
+            ->method('updateCon');
         $isdk->expects($this->never())
-            ->method('dsLoad');
+            ->method('loadCon');
         $isdk->expects($this->never())
             ->method('dsQuery');
 
@@ -397,7 +397,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $isdk = $this->getMockedIsdk($data);
         $isdk->expects($this->once())
-            ->method('dsAdd')
+            ->method('addCon')
             ->will($this->throwException(new \Exception('ooops')));
 
         $this->i->setIsdk($isdk);
@@ -409,8 +409,8 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * When contact is updated `dsUpdate` and `dsLoad` should be triggered.
-     * `dsLoad` is needed to check if contact was updated or not. This method
+     * When contact is updated `updateCon` and `loadCon` should be triggered.
+     * `loadCon` is needed to check if contact was updated or not. This method
      * should return `Contact` object
      */
     public function testUpdateContact()
@@ -424,13 +424,13 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $isdk = $this->getMockedIsdk($data);
         $isdk->expects($this->once())
-            ->method('dsUpdate')
+            ->method('updateCon')
             ->will($this->returnValue(1));
         $isdk->expects($this->once())
-            ->method('dsLoad')
+            ->method('loadCon')
             ->will($this->returnValue($data));
         $isdk->expects($this->never())
-            ->method('dsAdd');
+            ->method('addCon');
         $isdk->expects($this->never())
             ->method('dsQuery');
 
@@ -455,7 +455,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $isdk = $this->getMockedIsdk($data);
         $isdk->expects($this->once())
-            ->method('dsUpdate')
+            ->method('updateCon')
             ->will($this->throwException(new \Exception('ooops')));
 
         $this->i->setIsdk($isdk);
@@ -480,9 +480,9 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $isdk = $this->getMockedIsdk($data);
         $isdk->expects($this->never())
-            ->method('dsUpdate');
+            ->method('updateCon');
         $isdk->expects($this->once())
-            ->method('dsLoad')
+            ->method('loadCon')
             ->will($this->returnValue($data));
 
         $this->i->setIsdk($isdk);
@@ -497,7 +497,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     protected function getMockedIsdk(array $response = array())
     {
         $isdk = $this->getMockBuilder('\Isdk')
-            ->setMethods(array('dsQuery', 'dsUpdate', 'dsAdd', 'dsLoad'))
+            ->setMethods(array('dsQuery', 'updateCon', 'addCon', 'loadCon'))
             ->getMock();
 
         $isdk->expects($this->once())
