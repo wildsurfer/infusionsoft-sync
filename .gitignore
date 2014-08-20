@@ -1,0 +1,6 @@
+/vendor/*
+/bin/phpunit
+
+# IDE stuff
+.tags
+.vimprj
