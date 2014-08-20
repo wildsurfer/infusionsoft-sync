@@ -135,7 +135,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->push($collection);
 
-        $this->assertEquals(count($expected['create']), 1);
+        $this->assertCount(1, $expected['create']->count());
     }
 
     /**
@@ -172,7 +172,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->push($collection);
 
-        $this->assertEquals(count($expected['update']), 1);
+        $this->assertCount(1, $expected['update']->count());
     }
 
     /**
@@ -210,7 +210,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->push($collection);
 
-        $this->assertEquals(count($expected['skip']), 1);
+        $this->assertCount(1, $expected['skip']->count());
     }
 
 
@@ -247,7 +247,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->push($collection);
 
-        $this->assertEquals(count($expected['fail']), 1);
+        $this->assertCount(1, $expected['fail']->count());
     }
 
     /**
@@ -284,7 +284,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $expected = $this->i->push($collection);
 
-        $this->assertEquals(count($expected['fail']), 1);
+        $this->assertCount(1, $expected['fail']->count());
     }
 
     /**
