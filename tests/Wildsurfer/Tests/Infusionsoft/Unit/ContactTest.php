@@ -19,12 +19,14 @@ class ContactTest extends \PHPUnit_Framework_TestCase
             'FirstName' => 'FirstName',
             'Email' => 'test@test.com'
         );
+        $tags = array(1, 2, 3);
 
-        $c = new Contact($data);
+        $c = new Contact($data, $tags);
 
         $this->assertEquals($data['Id'], $c->getId());
         $this->assertEquals($data['FirstName'], $c->field('FirstName'));
         $this->assertEquals($data['Email'], $c->field('Email'));
+        $this->assertEquals($tags, $c->getTags());
     }
 
     /**
@@ -33,16 +35,27 @@ class ContactTest extends \PHPUnit_Framework_TestCase
      */
     public function testUniqueHash()
     {
+        $tags = array(1, 2, 3);
         $c = new Contact(array(
             'Id' => 1,
             'FirstName' => 'FirstName',
             'Email' => 'test@test.com'
         ));
+        $c1 = new Contact(
+            array(
+                'Id' => 1,
+                'FirstName' => 'FirstName',
+                'Email' => 'test@test.com'
+            ),
+            $tags
+        );
 
         $h = $c->uniqueHash();
+        $h1 = $c1->uniqueHash();
 
         $this->assertInternalType('string', $h);
         $this->assertEquals(32, strlen($h));
+        $this->assertNotEquals($h1, $h);
     }
 
     /**
@@ -56,7 +69,9 @@ class ContactTest extends \PHPUnit_Framework_TestCase
             'Email' => 'test@test.com'
         );
 
-        $c = new Contact($data);
+        $tags = array(1, 2);
+
+        $c = new Contact($data, $tags);
 
         $expected = $c->__toArray();
 
@@ -65,6 +80,17 @@ class ContactTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $data);
         $this->assertArrayNotHasKey('Id', $expected);
+    }
+
+    public function testSetGetTags()
+    {
+        $data = array('Id' => 1);
+
+        $tags = array(1, 2);
+        $c = new Contact($data);
+        $c->setTags($tags);
+
+        $this->assertEquals($tags, $c->getTags());
     }
 
     /**
@@ -99,6 +125,9 @@ class ContactTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($shouldBeFalse);
     }
 
+    /**
+     * Each time status is set other statuses should be resetted
+     */
     public function testResetStatus()
     {
         $contact = new Contact();

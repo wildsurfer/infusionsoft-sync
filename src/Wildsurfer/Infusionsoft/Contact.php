@@ -5,6 +5,7 @@ namespace Wildsurfer\Infusionsoft;
 class Contact
 {
     protected $data = array();
+    protected $tags = array();
     protected $id = null;
     protected $errorMessage = '';
 
@@ -13,14 +14,38 @@ class Contact
     protected $isFailed = false;
     protected $isSkipped = false;
 
-    public function __construct(array $data = array())
+    public function __construct(array $data = array(), array $tags = array())
     {
         if (!empty($data['Id'])) {
             $this->setId($data['Id']);
             unset($data['Id']);
         }
+        $this->setData($data);
+        $this->setTags($tags);
+    }
+
+    public function setData(array $data)
+    {
         ksort($data);
         $this->data = $data;
+        return $this;
+    }
+
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    public function setTags(array $tags)
+    {
+        sort($tags);
+        $this->tags = $tags;
+        return $this;
+    }
+
+    public function getTags()
+    {
+        return $this->tags;
     }
 
     public function setId($id)
@@ -102,7 +127,10 @@ class Contact
 
     public function uniqueHash()
     {
-        return md5(var_export($this->data, true));
+        return md5(
+            var_export($this->data, true).
+            var_export($this->tags, true)
+        );
     }
 
     public function setErrorMessage($msg)

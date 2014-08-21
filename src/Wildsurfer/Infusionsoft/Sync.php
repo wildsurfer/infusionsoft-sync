@@ -160,12 +160,52 @@ class Sync
             } else {
                 $contact->setId($response);
                 $contact->setIsCreated();
+                $tags = $contact->getTags();
+                if (count($tags) > 0) {
+                    foreach($tags as $t) {
+                        $response1 = $isdk->grpAssign($contact->getId(), $t);
+                        if (is_string($response1)) {
+                            $messsage1 = 'Add Tag failed. Error:' . $response1;
+                            $isdk->dsDelete('Contact', $contact->getId());
+                            $contact->setErrorMessage($messsage1);
+                            $contact->setIsFailed();
+                            break;
+                        }
+                    }
+                }
             }
         } catch (Exception $e) {
-            $contact->setErrorMessage();
+            $contact->setErrorMessage($e->getMessage());
             $contact->setIsFailed();
         }
         return $contact;
+    }
+
+    public function loadContact($id)
+    {
+        $isdk = $this->getIsdk();
+
+        $contactData = $isdk->loadCon($id);
+        if (!is_array($contactData))
+            return 'Load failed. Error:' . $contactData;
+
+        $tagsData = $isdk->dsQuery(
+            'ContactGroupAssign',
+            0,
+            1000,
+            array('ContactId' => $id),
+            array('GroupId')
+        );
+        if (!is_array($tagsData))
+            return 'Load failed. Error:' . $tagsData;
+
+        $tags = array();
+        foreach ($tagsData as $t) {
+            $tags[] = $t['GroupId'];
+        }
+        sort($tags);
+
+        return new Contact($contactData, $tags);
     }
 
     public function updateContact(Contact $contact)
@@ -173,14 +213,12 @@ class Sync
         $isdk = $this->getIsdk();
 
         try {
-            $remoteData = $isdk->loadCon($contact->getId());
+            $remote = $this->loadContact($contact->getId());
 
-            if (!is_array($remoteData)) {
-                $messsage = 'Load failed. Error:' . $remoteData;
-                $contact->setErrorMessage($messsage);
+            if (is_string($remote)) {
+                $contact->setErrorMessage($remote);
                 $contact->setIsFailed();
             } else {
-                $remote = new Contact($remoteData);
                 if ($remote->uniqueHash() == $contact->uniqueHash()) {
                     $contact->setIsSkipped();
                 } else {
@@ -192,6 +230,32 @@ class Sync
                     } else {
                         $contact->setId($response);
                         $contact->setIsUpdated();
+
+                        $remoteTags = $remote->getTags();
+                        $tags = $contact->getTags();
+
+                        $diff = array_diff($tags, $remoteTags);
+                        foreach ($diff as $d) {
+                            $response1 = $isdk->grpAssign($contact->getId(), $d);
+                            if (is_string($response1)) {
+                                $messsage1 = 'Add Tag failed. Error:' . $response1;
+                                $isdk->updateCon($contact->getId(), (array)$remote);
+                                $contact->setErrorMessage($messsage1);
+                                $contact->setIsFailed();
+                                break;
+                            }
+                        }
+                        $diffRemote = array_diff($remoteTags, $tags);
+                        foreach ($diffRemote as $dr) {
+                            $response2 = $isdk->grpRemove($contact->getId(), $dr);
+                            if (is_string($response2)) {
+                                $messsage1 = 'Delete Tag failed. Error:' . $response2;
+                                $isdk->updateCon($contact->getId(), (array)$remote);
+                                $contact->setErrorMessage($messsage2);
+                                $contact->setIsFailed();
+                                break;
+                            }
+                        }
                     }
                 }
             }

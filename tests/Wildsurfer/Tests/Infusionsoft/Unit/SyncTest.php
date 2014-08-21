@@ -365,6 +365,80 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $i->push($collection);
     }
 
+    /**
+     * When contact is loaded `loadCon` should be triggered. This method should
+     * return `Contact` object
+     */
+    public function testLoadContact()
+    {
+        $tags = array(1, 2);
+        $infsftTags = array(
+            array('GroupId' => 1),
+            array('GroupId' => 2)
+        );
+        $data = array(
+            'Id' => 1,
+            'Email' => 'test1@test.com',
+            'FirstName' => 'FirstName1'
+        );
+
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('loadCon')
+            ->will($this->returnValue($data));
+        $isdk->expects($this->once())
+            ->method('dsQuery')
+            ->with(
+                $this->equalTo('ContactGroupAssign'),
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->equalTo(array('GroupId'))
+            )
+            ->will($this->returnValue($infsftTags));
+
+        $this->i->setIsdk($isdk);
+
+        $expected = $this->i->loadContact(1);
+
+        $this->assertInstanceOf('Wildsurfer\Infusionsoft\Contact', $expected);
+        $this->assertEquals($expected->getTags(), $tags);
+    }
+
+    /**
+     * If load failed we should catch exeption
+     */
+    public function testLoadContactFail()
+    {
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('loadCon')
+            ->will($this->returnValue('ooops'));
+
+        $this->i->setIsdk($isdk);
+
+        $result = $this->i->loadContact(1);
+        $this->assertInternalType('string', $result);
+    }
+
+    /**
+     * If load tags failed we should catch exeption
+     */
+    public function testLoadContactTagsFail()
+    {
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('loadCon')
+            ->will($this->returnValue(array()));
+        $isdk->expects($this->once())
+            ->method('dsQuery')
+            ->will($this->returnValue('ooops'));
+
+        $this->i->setIsdk($isdk);
+
+        $result = $this->i->loadContact(1);
+        $this->assertInternalType('string', $result);
+    }
 
     /**
      * When contact is created `addCon` should be triggered. This method should
@@ -396,6 +470,25 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(true, $expected->isCreated());
     }
 
+    /**
+     * When 'tags' are present in data they should be correctly created
+     */
+    public function testCreateContactTags()
+    {
+        $contact = new Contact(
+            array('Email' => 'test1@test.com'),
+            array(1, 2)
+        );
+
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->exactly(2))
+            ->method('grpAssign')
+            ->will($this->returnValue(true));
+
+        $this->i->setIsdk($isdk);
+
+        $expected = $this->i->createContact($contact);
+    }
 
     /**
      * If create failed we should catch exeption
@@ -421,6 +514,37 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * If adding tags failed we should remove created contact and return error
+     */
+    public function testCreateContactTagsFailed()
+    {
+        $contact = new Contact(
+            array('Email' => 'test1@test.com'),
+            array(1, 2)
+        );
+
+        $id = 1;
+
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('grpAssign')
+            ->will($this->returnValue('ooops'));
+        $isdk->expects($this->once())
+            ->method('addCon')
+            ->will($this->returnValue($id));
+        $isdk->expects($this->once())
+            ->method('dsDelete')
+            ->with($this->equalTo('Contact'), $this->equalTo($id))
+            ->will($this->returnValue(true));
+
+        $this->i->setIsdk($isdk);
+
+        $expected = $this->i->createContact($contact);
+
+        $this->assertEquals(true, $expected->isFailed());
+    }
+
+    /**
      * When contact is updated `updateCon` and `loadCon` should be triggered.
      * `loadCon` is needed to check if contact was updated or not. This method
      * should return `Contact` object
@@ -438,26 +562,31 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             'Email' => 'test1@test.com',
             'FirstName' => 'FirstName1'
         );
+
+        $contactOld = new Contact($dataOld);
         $contact = new Contact($data);
+
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('loadContact'))
+            ->getMock();
+
+        $i->expects($this->once())
+            ->method('loadContact')
+            ->will($this->returnValue($contactOld));
 
         $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
             ->method('updateCon')
             ->will($this->returnValue(1));
-        $isdk->expects($this->once())
-            ->method('loadCon')
-            ->will($this->returnValue($dataOld));
-        $isdk->expects($this->never())
-            ->method('addCon');
-        $isdk->expects($this->never())
-            ->method('dsQuery');
 
-        $this->i->setIsdk($isdk);
+        $i->setIsdk($isdk);
 
-        $expected = $this->i->updateContact($contact);
+        $expected = $i->updateContact($contact);
 
         $this->assertInstanceOf('Wildsurfer\Infusionsoft\Contact', $expected);
         $this->assertEquals(true, $expected->isUpdated());
+        $this->assertEquals($expected->field('Email'), $contact->field('Email'));
     }
 
     /**
@@ -470,26 +599,125 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             'Email' => 'test1231@test.com',
             'FirstName' => 'FirstName1'
         );
+        $contactOld = new Contact($dataOld);
         $contact = new Contact(array(
             'Id' => 1,
             'Email' => 'test1@test.com',
             'FirstName' => 'FirstName1'
         ));
 
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('loadContact'))
+            ->getMock();
+
+        $i->expects($this->once())
+            ->method('loadContact')
+            ->will($this->returnValue($contactOld));
+
         $isdk = $this->getMockedIsdk();
-        $isdk->expects($this->once())
-            ->method('loadCon')
-            ->will($this->returnValue($dataOld));
         $isdk->expects($this->once())
             ->method('updateCon')
             ->will($this->returnValue('ooops'));
 
-        $this->i->setIsdk($isdk);
+        $i->setIsdk($isdk);
 
-        $result = $this->i->updateContact($contact);
+        $result = $i->updateContact($contact);
         $expected = $result->getErrorMessage();
         $this->assertNotEmpty($expected);
         $this->assertEquals(true, $result->isFailed());
+    }
+
+    /**
+     * When 'tags' are present in data they should be correctly created
+     */
+    public function testUpdateContactTags()
+    {
+        $oldData = array(
+            'Id' => 1,
+            'Email' => 'test1@test.com'
+        );
+        $oldTags = array(1, 3);
+        $contactOld = new Contact($oldData, $oldTags);
+
+        $contact = new Contact(
+            array(
+                'Id' => 1,
+                'Email' => 'test1@test.com'
+            ),
+            array(1, 2)
+        );
+
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('loadContact'))
+            ->getMock();
+
+        $i->expects($this->once())
+            ->method('loadContact')
+            ->will($this->returnValue($contactOld));
+
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('grpAssign')
+            ->will($this->returnValue(true));
+        $isdk->expects($this->once())
+            ->method('grpRemove')
+            ->will($this->returnValue(true));
+
+        $i->setIsdk($isdk);
+
+        $expected = $i->updateContact($contact);
+    }
+
+    /**
+     * If updating tags failed we should return error. Contact should be
+     * reverted to original state
+     */
+    public function testUpdateContactTagsFailed()
+    {
+        $dataOld = array(
+            'Id' => 1,
+            'Email' => 'test11@test.com'
+        );
+
+        $contactOld = new Contact($dataOld);
+
+        $contact = new Contact(
+            array(
+                'Id' => 1,
+                'Email' => 'test1@test.com'
+            ),
+            array(1, 2)
+        );
+
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('loadContact'))
+            ->getMock();
+
+        $i->expects($this->once())
+            ->method('loadContact')
+            ->will($this->returnValue($contactOld));
+
+        $isdk = $this->getMockedIsdk();
+        $isdk->expects($this->once())
+            ->method('grpAssign')
+            ->will($this->returnValue('ooops'));
+        $isdk->expects($this->at(0))
+            ->method('updateCon')
+            ->will($this->returnValue(1));
+        $isdk->expects($this->at(2))
+            ->method('updateCon')
+            ->with($this->equalTo(1), $this->equalTo((array)$contactOld))
+            ->will($this->returnValue(1));
+
+        $i->setIsdk($isdk);
+
+        $expected = $i->updateContact($contact);
+
+        $this->assertEquals(true, $expected->isFailed());
+        $this->assertEquals($contact->field('Email'), $expected->field('Email'));
     }
 
     /**
@@ -504,16 +732,22 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         );
         $contact = new Contact($data);
 
+        $i = $this->getMockBuilder('\Wildsurfer\Infusionsoft\Sync')
+            ->disableOriginalConstructor()
+            ->setMethods(array('loadContact'))
+            ->getMock();
+
+        $i->expects($this->once())
+            ->method('loadContact')
+            ->will($this->returnValue($contact));
+
         $isdk = $this->getMockedIsdk();
         $isdk->expects($this->never())
             ->method('updateCon');
-        $isdk->expects($this->once())
-            ->method('loadCon')
-            ->will($this->returnValue($data));
 
-        $this->i->setIsdk($isdk);
+        $i->setIsdk($isdk);
 
-        $expected = $this->i->updateContact($contact);
+        $expected = $i->updateContact($contact);
         $this->assertEquals(true, $expected->isSkipped());
     }
 
@@ -523,8 +757,15 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     protected function getMockedIsdk(array $response = array())
     {
         $isdk = $this->getMockBuilder('\Isdk')
-            ->setMethods(array('dsQuery', 'updateCon', 'addCon', 'loadCon'))
-            ->getMock();
+            ->setMethods(array(
+                'dsQuery',
+                'dsDelete',
+                'updateCon',
+                'addCon',
+                'loadCon',
+                'grpAssign',
+                'grpRemove'
+            ))->getMock();
 
         if ($response) {
             $isdk->expects($this->once())
