@@ -88,10 +88,43 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     public function testPullContacts()
     {
         $data = array(
-            array('Email' => 'test1@test.com'),
-            array('Email' => 'test2@test.com')
+            array('Id' => 1, 'Email' => 'test1@test.com'),
+            array('Id' => 2, 'Email' => 'test2@test.com')
         );
-        $isdk = $this->getMockedIsdk($data);
+
+        $tags = array(1, 2);
+
+        $infsftTags = array(
+            array('GroupId' => 1, 'ContactId' => 1),
+            array('GroupId' => 2, 'ContactId' => 1),
+            array('GroupId' => 4, 'ContactId' => 1)
+        );
+
+        $isdk = $this->getMockedIsdk();
+
+        $isdk->expects($this->at(0))
+            ->method('dsQuery')
+            ->with(
+                $this->equalTo('ContactGroupAssign'),
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->equalTo(array('GroupId', 'ContactId'))
+            )
+            ->will($this->returnValue($infsftTags));
+
+        $isdk->expects($this->at(1))
+            ->method('dsQuery')
+            ->with(
+                $this->equalTo('Contact'),
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->anything()
+            )
+            ->will($this->returnValue($data));
+
+
         $this->i->setIsdk($isdk);
 
         $contacts = $this->i->pull();
@@ -100,6 +133,16 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $i = $contacts->count();
         $j = count($data);
         $this->assertEquals($i, $j);
+
+        foreach($contacts->read() as $c) {
+            if ($c->getId() == 1) {
+                $tagsSet = $c->getTags();
+                $this->assertEquals($tagsSet, $tags);
+            } else {
+                $this->assertEmpty($c->getTags());
+            }
+        }
+
     }
 
     /**
@@ -764,7 +807,8 @@ class SyncTest extends \PHPUnit_Framework_TestCase
                 'addCon',
                 'loadCon',
                 'grpAssign',
-                'grpRemove'
+                'grpRemove',
+                'cfgCon'
             ))->getMock();
 
         if ($response) {

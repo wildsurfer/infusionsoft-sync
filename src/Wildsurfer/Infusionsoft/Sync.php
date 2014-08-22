@@ -2,7 +2,7 @@
 
 namespace Wildsurfer\Infusionsoft;
 
-use Isdk;
+use iSDK;
 
 class Sync
 {
@@ -18,7 +18,7 @@ class Sync
         elseif (empty($options['fields']))
             throw new SyncException("'fields' array not set!");
 
-        $this->setConfig($options);
+            $this->setConfig($options);
     }
 
     public function setConfig(array $options)
@@ -45,13 +45,39 @@ class Sync
     public function pull()
     {
         $allContacts = new ContactCollection();
+        $allTags = array();
 
         $isdk = $this->getIsdk();
-        $fields = $this->options['fields'];
+        $fields = $this->getConfigFields();
+        $validTags = $this->getConfigTags();
 
         $limit = 1000;
         $page = 0;
 
+        while(true)
+        {
+            $results = $isdk->dsQuery(
+                'ContactGroupAssign',
+                $limit,
+                $page,
+                array('GroupId' => '%'),
+                array('GroupId', 'ContactId')
+            );
+
+            if (is_string($results))
+                throw new SyncException($results);
+            else if (is_array($results)) {
+                foreach ($results as $r) {
+                    if (in_array($r['GroupId'], $validTags))
+                        $allTags[$r['ContactId']][] = $r['GroupId'];
+                }
+            }
+
+            if(count($results) < $limit) break;
+            $page++;
+        }
+
+        $page = 0;
         while(true)
         {
             $results = $isdk->dsQuery(
@@ -67,6 +93,10 @@ class Sync
             else if (is_array($results)) {
                 foreach ($results as $r) {
                     $c = new Contact($r);
+                    $id = $c->getId();
+                    if (!empty($allTags[$id])) {
+                        $c->setTags($allTags[$id]);
+                    }
                     $allContacts->create($c);
                 }
             }
@@ -74,6 +104,7 @@ class Sync
             if(count($results) < $limit) break;
             $page++;
         }
+
         return $allContacts;
     }
 
@@ -185,7 +216,7 @@ class Sync
     {
         $isdk = $this->getIsdk();
 
-        $contactData = $isdk->loadCon($id);
+        $contactData = $isdk->loadCon($id, $this->getConfigFields());
         if (!is_array($contactData))
             return 'Load failed. Error:' . $contactData;
 
@@ -203,9 +234,10 @@ class Sync
         foreach ($tagsData as $t) {
             $tags[] = $t['GroupId'];
         }
-        sort($tags);
+        $validTags = array_intersect($tags, $this->getConfigTags());
+        sort($validTags);
 
-        return new Contact($contactData, $tags);
+        return new Contact($contactData, $validTags);
     }
 
     public function updateContact(Contact $contact)
@@ -274,6 +306,14 @@ class Sync
 
     public function getIsdk()
     {
+        if (!$this->isdk) {
+            $isdk = new iSDK();
+            $isdk->cfgCon(
+                $this->options['appname'],
+                $this->options['apikey']
+            );
+            $this->setIsdk($isdk);
+        }
         return $this->isdk;
     }
 }
