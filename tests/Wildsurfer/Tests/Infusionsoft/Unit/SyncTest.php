@@ -756,7 +756,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
      */
     protected function getMockedIsdk(array $response = array())
     {
-        $isdk = $this->getMockBuilder('\Isdk')
+        $isdk = $this->getMockBuilder('\iSDK')
             ->setMethods(array(
                 'dsQuery',
                 'dsDelete',
