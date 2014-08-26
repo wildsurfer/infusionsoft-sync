@@ -183,7 +183,7 @@ class Sync
         $isdk = $this->getIsdk();
 
         try {
-            $response = $isdk->addCon((array)$contact);
+            $response = $isdk->addCon($contact->getData());
             if (is_string($response)) {
                 $messsage = 'Add failed. Error:' . $response;
                 $contact->setErrorMessage($messsage);
