@@ -112,7 +112,7 @@ class ContactTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider statusProvider
      */
-    public function statusesTest($status)
+    public function testStatuses($status)
     {
         $contact = new Contact();
         $p = 'setIs'.$status;
