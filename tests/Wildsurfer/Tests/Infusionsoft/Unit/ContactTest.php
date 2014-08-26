@@ -158,6 +158,29 @@ class ContactTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    /**
+     * Data should be parsed to match Infusionsoft transformations. For example
+     * FirstName should be uppercased
+     */
+    public function testSetGetData()
+    {
+        $data = array(
+            'FirstName' => 'test',
+            'LastName' => 'test',
+        );
+
+        $dataExpected = array(
+            'FirstName' => 'Test',
+            'LastName' => 'Test',
+        );
+
+        $contact = new Contact();
+
+        $contact->setData($data);
+
+        $this->assertEquals($dataExpected, $contact->getData());
+    }
+
     public function statusProvider()
     {
         return array(

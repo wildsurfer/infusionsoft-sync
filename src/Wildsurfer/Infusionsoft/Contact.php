@@ -27,6 +27,13 @@ class Contact
     public function setData(array $data)
     {
         ksort($data);
+
+        if (!empty($data['FirstName']))
+            $data['FirstName'] = ucfirst($data['FirstName']);
+
+        if (!empty($data['LastName']))
+            $data['LastName'] = ucfirst($data['LastName']);
+
         $this->data = $data;
         return $this;
     }
