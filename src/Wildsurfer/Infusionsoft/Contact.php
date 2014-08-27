@@ -34,6 +34,9 @@ class Contact
         if (!empty($data['LastName']))
             $data['LastName'] = ucfirst($data['LastName']);
 
+        if (empty($data['OwnerID']))
+            $data['OwnerID'] = 0;
+
         $this->data = $data;
         return $this;
     }
