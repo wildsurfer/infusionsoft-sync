@@ -2,6 +2,8 @@
 
 namespace Wildsurfer\Infusionsoft;
 
+use DateTime;
+
 class Contact
 {
     protected $data = array();
@@ -28,14 +30,59 @@ class Contact
     {
         ksort($data);
 
-        if (!empty($data['FirstName']))
-            $data['FirstName'] = ucfirst($data['FirstName']);
 
-        if (!empty($data['LastName']))
-            $data['LastName'] = ucfirst($data['LastName']);
+        foreach ($data as $key => $val) {
 
-        if (empty($data['OwnerID']))
-            $data['OwnerID'] = 0;
+            switch ($key) {
+            case 'FirstName':
+            case 'LastName':
+            case 'City':
+            case 'City2':
+            case 'City3':
+            case 'StreetAddress1':
+            case 'StreetAddress2':
+            case 'Address2Street1':
+            case 'Address2Street2':
+            case 'Address3Street1':
+            case 'Address3Street2':
+                $data[$key] = ucfirst(substr($val, 0, 40));
+            case 'Phone1':
+            case 'Phone2':
+            case 'Phone3':
+            case 'Phone4':
+            case 'Phone5':
+                $phone = preg_replace('/[^0-9]/', '', $val);
+                $length = strlen($phone);
+
+                if ($length == 10) {
+                    $data[$key] = sprintf('(%d) %d-%d',
+                        substr($phone, 0, 3),
+                        substr($phone, 3, 3),
+                        substr($phone, 6, 4)
+                    );
+                }
+                elseif ($length == 11) {
+                    $data[$key] = sprintf('%d (%d) %d-%d',
+                        substr($phone, 0, 1),
+                        substr($phone, 1, 3),
+                        substr($phone, 3, 3),
+                        substr($phone, 6, 4)
+                    );
+                }
+
+                break;
+            case 'Birthday':
+                if ($val instanceof DateTime)
+                    $date = $val;
+                else
+                    $date = new DateTime($val);
+                $data[$key] = $date->format('Ymd\TH:i:s');
+                break;
+            }
+
+            if (empty($data['OwnerID']))
+                $data['OwnerID'] = 0;
+        }
 
         $this->data = $data;
         return $this;

@@ -160,26 +160,24 @@ class ContactTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Data should be parsed to match Infusionsoft transformations. For example
-     * FirstName should be uppercased
+     * Name fields differ from text fields only in that (supposedly) they
+     * automatically capitalize the first letter of every word
      */
-    public function testSetGetData()
+    public function testSetGetDataNames()
     {
         $data = array(
             'FirstName' => 'test',
-            'LastName' => 'test'
+            'LastName' => 'test e'
         );
 
         $dataExpected = array(
             'FirstName' => 'Test',
-            'LastName' => 'Test',
+            'LastName' => 'Test e',
             'OwnerID' => 0
         );
 
         $contact = new Contact();
-
         $contact->setData($data);
-
         $this->assertEquals($dataExpected, $contact->getData());
     }
 
