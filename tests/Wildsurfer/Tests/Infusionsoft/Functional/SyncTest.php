@@ -13,8 +13,8 @@ use DateTime;
 class SyncTest extends \PHPUnit_Framework_TestCase
 {
     protected $testConfig = array(
-        'appname' => 'ce203',
-        'apikey' => 'a27c9e85da73ab6967eaaaf66bc12b24',
+        'appname' => 'xx123',
+        'apikey' => 'asdasdh878237dg2323gdy32gd87g23',
         'fields' => array(
             'Email',
             'FirstName',
@@ -26,6 +26,16 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        $configPath = './infusionsoft.ini';
+        if (!file_exists($configPath))
+            $this->markTestSkipped(
+              'Infusionsoft credentials not set. Check README for more details'
+          );
+        else {
+            $config = parse_ini_file($configPath);
+            $this->testConfig['appname'] = $config['appname'];
+            $this->testConfig['apikey'] = $config['apikey'];
+        }
         $this->i = new Sync($this->testConfig);
     }
 

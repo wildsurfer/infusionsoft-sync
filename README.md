@@ -75,7 +75,12 @@ foreach($myUsers as $user) {
     $toBeSyncedUsers->create(new Contact($array));
 }
 
-$sync->push($toBeSyncedUsers);
+$result = $sync->push($toBeSyncedUsers);
+
+$created = $result['create']->read(); // Array of created contacts
+$created = $result['update']->read(); // Array of updated contacts
+$created = $result['fail']->read(); // Array of failed contacts
+$created = $result['skip']->read(); // Array of skipped contacts
 
 
 ```
@@ -89,4 +94,20 @@ Install with Composer
           "wildsurfer/infusionsoft": "dev-master"
       }
   }
+```
+
+Running tests
+=============
+
+Tests that written for this library are splitted in two testsuites: `unit` and
+`functional`. To run functional tests you will need to setup Infusionsoft
+sandbox account and find your `appname` and `apikey`.
+
+More info:
+https://developer.infusionsoft.com/sandbox_application
+http://ug.infusionsoft.com/article/AA-00442/0/Infusionsoft-API-Key.html
+
+```bash
+$ cp infusionsoft.ini.dist infusionsoft.ini
+$ vim infusionsoft.ini
 ```
