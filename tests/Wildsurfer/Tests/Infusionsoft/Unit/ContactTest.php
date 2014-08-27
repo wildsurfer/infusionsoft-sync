@@ -66,7 +66,8 @@ class ContactTest extends \PHPUnit_Framework_TestCase
         $data = array(
             'Id' => 1,
             'FirstName' => 'FirstName',
-            'Email' => 'test@test.com'
+            'Email' => 'test@test.com',
+            'OwnerID' => 0
         );
 
         $tags = array(1, 2);
@@ -166,12 +167,13 @@ class ContactTest extends \PHPUnit_Framework_TestCase
     {
         $data = array(
             'FirstName' => 'test',
-            'LastName' => 'test',
+            'LastName' => 'test'
         );
 
         $dataExpected = array(
             'FirstName' => 'Test',
             'LastName' => 'Test',
+            'OwnerID' => 0
         );
 
         $contact = new Contact();

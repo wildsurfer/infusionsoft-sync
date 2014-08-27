@@ -34,7 +34,9 @@ class Sync
 
     public function getConfigTags()
     {
-        return $this->options['tags'];
+        if (isset($this->options['tags']))
+            return $this->options['tags'];
+        else return array();
     }
 
     public function getConfigFields()
@@ -220,22 +222,27 @@ class Sync
         if (!is_array($contactData))
             return 'Load failed. Error:' . $contactData;
 
-        $tagsData = $isdk->dsQuery(
-            'ContactGroupAssign',
-            0,
-            1000,
-            array('ContactId' => $id),
-            array('GroupId')
-        );
-        if (!is_array($tagsData))
-            return 'Load failed. Error:' . $tagsData;
+        $configTags = $this->getConfigTags();
+        $validTags = array();
 
-        $tags = array();
-        foreach ($tagsData as $t) {
-            $tags[] = $t['GroupId'];
+        if ($configTags) {
+            $tagsData = $isdk->dsQuery(
+                'ContactGroupAssign',
+                1000,
+                0,
+                array('ContactId' => $id),
+                array('GroupId')
+            );
+            if (!is_array($tagsData))
+                return 'Load failed. Error:' . $tagsData;
+
+            $tags = array();
+            foreach ($tagsData as $t) {
+                $tags[] = $t['GroupId'];
+            }
+            $validTags = array_intersect($tags, $configTags);
+            sort($validTags);
         }
-        $validTags = array_intersect($tags, $this->getConfigTags());
-        sort($validTags);
 
         return new Contact($contactData, $validTags);
     }
@@ -254,7 +261,7 @@ class Sync
                 if ($remote->uniqueHash() == $contact->uniqueHash()) {
                     $contact->setIsSkipped();
                 } else {
-                    $response = $isdk->updateCon($contact->getId(), (array)$contact);
+                    $response = $isdk->updateCon($contact->getId(), $contact->getData());
                     if (is_string($response)) {
                         $messsage = 'Add failed. Error:' . $response;
                         $contact->setErrorMessage($messsage);
@@ -271,7 +278,7 @@ class Sync
                             $response1 = $isdk->grpAssign($contact->getId(), $d);
                             if (is_string($response1)) {
                                 $messsage1 = 'Add Tag failed. Error:' . $response1;
-                                $isdk->updateCon($contact->getId(), (array)$remote);
+                                $isdk->updateCon($contact->getId(), $remote->getData());
                                 $contact->setErrorMessage($messsage1);
                                 $contact->setIsFailed();
                                 break;
@@ -282,7 +289,7 @@ class Sync
                             $response2 = $isdk->grpRemove($contact->getId(), $dr);
                             if (is_string($response2)) {
                                 $messsage1 = 'Delete Tag failed. Error:' . $response2;
-                                $isdk->updateCon($contact->getId(), (array)$remote);
+                                $isdk->updateCon($contact->getId(), $remote->getData());
                                 $contact->setErrorMessage($messsage2);
                                 $contact->setIsFailed();
                                 break;

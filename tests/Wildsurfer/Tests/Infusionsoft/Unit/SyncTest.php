@@ -66,6 +66,36 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * If tags not set they should not be used for push and pull. Infusionsoft
+     * should not be queued
+     */
+    public function testConfigTagsEmpty()
+    {
+        $options = array(
+            'appname' => $this->testConfig['appname'],
+            'apikey' =>  $this->testConfig['apikey'],
+            'fields' =>  $this->testConfig['fields'],
+        );
+        $i = new Sync($options);
+
+        $isdk = $this->getMockedIsdk();
+
+        $isdk->expects($this->never())
+            ->method('dsQuery');
+
+        $isdk->expects($this->once())
+            ->method('loadCon')
+            ->will($this->returnValue(array()));
+
+        $i->setIsdk($isdk);
+
+        $i->loadContact(1);
+
+        $expected = $i->getConfigTags();
+        $this->assertEquals($expected, array());
+    }
+
+    /**
      * You will need to specify all contact fields that you want to perate with.
      * Please note that custom fields shpuld be prefixed with underscore.
      */
@@ -261,7 +291,6 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $expected['skip']->count());
     }
 
-
     /**
      * `push()` function is taking a `ContactCollection` object as argument. If
      * contact creation failed exception will be catched. Result will be array:
@@ -370,7 +399,6 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $i->push($collection);
     }
-
 
     /**
      * When we push one contact we don't need to load all contacts from IS.
@@ -702,14 +730,24 @@ class SyncTest extends \PHPUnit_Framework_TestCase
 
         $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
-            ->method('grpAssign')
-            ->will($this->returnValue(true));
+            ->method('updateCon')
+            ->will($this->returnValue(1));
         $isdk->expects($this->once())
             ->method('grpRemove')
+            ->with(
+                $this->equalTo(1),
+                $this->equalTo(3)
+            )
+            ->will($this->returnValue(true));
+        $isdk->expects($this->once())
+            ->method('grpAssign')
+            ->with(
+                $this->equalTo(1),
+                $this->equalTo(2)
+            )
             ->will($this->returnValue(true));
 
         $i->setIsdk($isdk);
-
         $expected = $i->updateContact($contact);
     }
 
@@ -752,7 +790,7 @@ class SyncTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(1));
         $isdk->expects($this->at(2))
             ->method('updateCon')
-            ->with($this->equalTo(1), $this->equalTo((array)$contactOld))
+            ->with($this->equalTo(1), $this->equalTo($contactOld->getData()))
             ->will($this->returnValue(1));
 
         $i->setIsdk($isdk);
