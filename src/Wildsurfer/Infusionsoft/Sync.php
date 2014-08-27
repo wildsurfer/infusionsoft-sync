@@ -47,39 +47,17 @@ class Sync
     public function pull()
     {
         $allContacts = new ContactCollection();
-        $allTags = array();
 
         $isdk = $this->getIsdk();
         $fields = $this->getConfigFields();
+        if (!in_array('Groups', $fields))
+            $fields[] = 'Groups';
+
         $validTags = $this->getConfigTags();
 
         $limit = 1000;
         $page = 0;
 
-        while(true)
-        {
-            $results = $isdk->dsQuery(
-                'ContactGroupAssign',
-                $limit,
-                $page,
-                array('GroupId' => '%'),
-                array('GroupId', 'ContactId')
-            );
-
-            if (is_string($results))
-                throw new SyncException($results);
-            else if (is_array($results)) {
-                foreach ($results as $r) {
-                    if (in_array($r['GroupId'], $validTags))
-                        $allTags[$r['ContactId']][] = $r['GroupId'];
-                }
-            }
-
-            if(count($results) < $limit) break;
-            $page++;
-        }
-
-        $page = 0;
         while(true)
         {
             $results = $isdk->dsQuery(
@@ -94,11 +72,14 @@ class Sync
                 throw new SyncException($results);
             else if (is_array($results)) {
                 foreach ($results as $r) {
-                    $c = new Contact($r);
-                    $id = $c->getId();
-                    if (!empty($allTags[$id])) {
-                        $c->setTags($allTags[$id]);
+                    $tags = array();
+                    if (!empty($r['Groups'])) {
+                        $tags = array_intersect(explode(',', $r['Groups']), $validTags);
+                        unset($r['Groups']);
                     }
+                    $c = new Contact($r);
+                    $c->setTags($tags);
+
                     $allContacts->create($c);
                 }
             }
@@ -218,31 +199,25 @@ class Sync
     {
         $isdk = $this->getIsdk();
 
-        $contactData = $isdk->loadCon($id, $this->getConfigFields());
+        $fields =  $this->getConfigFields();
+        if (!in_array('Groups', $fields))
+            $fields[] = 'Groups';
+
+        $contactData = $isdk->loadCon($id, $fields);
         if (!is_array($contactData))
             return 'Load failed. Error:' . $contactData;
 
-        $configTags = $this->getConfigTags();
         $validTags = array();
-
-        if ($configTags) {
-            $tagsData = $isdk->dsQuery(
-                'ContactGroupAssign',
-                1000,
-                0,
-                array('ContactId' => $id),
-                array('GroupId')
-            );
-            if (!is_array($tagsData))
-                return 'Load failed. Error:' . $tagsData;
-
-            $tags = array();
-            foreach ($tagsData as $t) {
-                $tags[] = $t['GroupId'];
+        if (!empty($contactData['Groups'])) {
+            $contactTags = explode(',', $contactData['Groups']);
+            $configTags = $this->getConfigTags();
+            if ($configTags && $contactTags) {
+                $validTags = array_intersect($contactTags, $configTags);
+                sort($validTags);
             }
-            $validTags = array_intersect($tags, $configTags);
-            sort($validTags);
         }
+
+        unset($contactData['Groups']);
 
         return new Contact($contactData, $validTags);
     }

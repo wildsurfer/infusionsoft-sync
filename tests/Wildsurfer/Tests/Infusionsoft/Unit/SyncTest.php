@@ -118,32 +118,15 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     public function testPullContacts()
     {
         $data = array(
-            array('Id' => 1, 'Email' => 'test1@test.com'),
+            array('Id' => 1, 'Email' => 'test1@test.com', 'Groups' => '1,2,4'),
             array('Id' => 2, 'Email' => 'test2@test.com')
         );
 
         $tags = array(1, 2);
 
-        $infsftTags = array(
-            array('GroupId' => 1, 'ContactId' => 1),
-            array('GroupId' => 2, 'ContactId' => 1),
-            array('GroupId' => 4, 'ContactId' => 1)
-        );
-
         $isdk = $this->getMockedIsdk();
 
-        $isdk->expects($this->at(0))
-            ->method('dsQuery')
-            ->with(
-                $this->equalTo('ContactGroupAssign'),
-                $this->anything(),
-                $this->anything(),
-                $this->anything(),
-                $this->equalTo(array('GroupId', 'ContactId'))
-            )
-            ->will($this->returnValue($infsftTags));
-
-        $isdk->expects($this->at(1))
+        $isdk->expects($this->once())
             ->method('dsQuery')
             ->with(
                 $this->equalTo('Contact'),
@@ -443,30 +426,17 @@ class SyncTest extends \PHPUnit_Framework_TestCase
     public function testLoadContact()
     {
         $tags = array(1, 2);
-        $infsftTags = array(
-            array('GroupId' => 1),
-            array('GroupId' => 2)
-        );
         $data = array(
             'Id' => 1,
             'Email' => 'test1@test.com',
-            'FirstName' => 'FirstName1'
+            'FirstName' => 'FirstName1',
+            'Groups' => '1,2'
         );
 
         $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
             ->method('loadCon')
             ->will($this->returnValue($data));
-        $isdk->expects($this->once())
-            ->method('dsQuery')
-            ->with(
-                $this->equalTo('ContactGroupAssign'),
-                $this->anything(),
-                $this->anything(),
-                $this->anything(),
-                $this->equalTo(array('GroupId'))
-            )
-            ->will($this->returnValue($infsftTags));
 
         $this->i->setIsdk($isdk);
 
@@ -484,25 +454,6 @@ class SyncTest extends \PHPUnit_Framework_TestCase
         $isdk = $this->getMockedIsdk();
         $isdk->expects($this->once())
             ->method('loadCon')
-            ->will($this->returnValue('ooops'));
-
-        $this->i->setIsdk($isdk);
-
-        $result = $this->i->loadContact(1);
-        $this->assertInternalType('string', $result);
-    }
-
-    /**
-     * If load tags failed we should catch exeption
-     */
-    public function testLoadContactTagsFail()
-    {
-        $isdk = $this->getMockedIsdk();
-        $isdk->expects($this->once())
-            ->method('loadCon')
-            ->will($this->returnValue(array()));
-        $isdk->expects($this->once())
-            ->method('dsQuery')
             ->will($this->returnValue('ooops'));
 
         $this->i->setIsdk($isdk);
