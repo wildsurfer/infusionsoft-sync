@@ -65,6 +65,7 @@ To push your application users to Infusionsoft API
 
 
 ``` php
+<?php
 
 $myUsers = ... // Fetch data from your storage
 
@@ -78,12 +79,30 @@ foreach($myUsers as $user) {
 $result = $sync->push($toBeSyncedUsers);
 
 $created = $result['create']->read(); // Array of created contacts
-$created = $result['update']->read(); // Array of updated contacts
-$created = $result['fail']->read(); // Array of failed contacts
-$created = $result['skip']->read(); // Array of skipped contacts
-
+$updated = $result['update']->read(); // Array of updated contacts
+$failed = $result['fail']->read(); // Array of failed contacts
+$skipped = $result['skip']->read(); // Array of skipped contacts
 
 ```
+
+Displaying errors
+
+
+```php
+<?php
+
+$result = $sync->push(...);
+
+$failed = $result['fail']; // Array of failed contacts
+
+if ($failed->count() > 0) {
+    foreach ($failed->read() as $f) {
+        echo $f->getErrorMessage();
+    }
+}
+
+```
+
 
 Install with Composer
 =====================
