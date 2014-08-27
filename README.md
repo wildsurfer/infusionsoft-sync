@@ -104,7 +104,9 @@ Tests that written for this library are splitted in two testsuites: `unit` and
 sandbox account and find your `appname` and `apikey`.
 
 More info:
+
 https://developer.infusionsoft.com/sandbox_application
+
 http://ug.infusionsoft.com/article/AA-00442/0/Infusionsoft-API-Key.html
 
 ```bash
