@@ -6,7 +6,7 @@ use Exception;
 
 class ContactCollection
 {
-    protected $stack;
+    protected $stack = array();
 
     public function create($contact = array())
     {
