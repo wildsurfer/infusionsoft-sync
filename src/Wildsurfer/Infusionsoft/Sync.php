@@ -107,8 +107,8 @@ class Sync
         $contacts = $collection->read();
 
         switch ($count) {
-        case ($count <= 0):
-            throw new SyncException('Trying to push empty collection!');
+        case 0:
+            return $result;
             break;
         /**
          * If Collection has 1 contact we don't want to pull all contacts from
