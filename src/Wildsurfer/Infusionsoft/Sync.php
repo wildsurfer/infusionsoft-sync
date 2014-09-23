@@ -49,9 +49,14 @@ class Sync
         $allContacts = new ContactCollection();
 
         $isdk = $this->getIsdk();
+
         $fields = $this->getConfigFields();
-        if (!in_array('Groups', $fields))
+        if (!in_array('Groups', array_values($fields)))
             $fields[] = 'Groups';
+        if (!in_array('LastUpdated', array_values($fields)))
+            $fields[] = 'LastUpdated';
+        if (!in_array('Id', array_values($fields)))
+            $fields[] = 'Id';
 
         $validTags = $this->getConfigTags();
 

@@ -9,6 +9,7 @@ class Contact
     protected $data = array();
     protected $tags = array();
     protected $id = null;
+    protected $lastEditDate = null;
     protected $errorMessage = '';
 
     protected $isCreated = false;
@@ -22,6 +23,15 @@ class Contact
             $this->setId($data['Id']);
             unset($data['Id']);
         }
+        if (!empty($data['ContactId'])) {
+            $this->setId($data['ContactId']);
+            unset($data['ContactId']);
+        }
+        if (!empty($data['LastUpdated'])) {
+            $date = new DateTime($data['LastUpdated']);
+            $this->setLastEditDate($date);
+            unset($data['LastUpdated']);
+        }
         $this->setData($data);
         $this->setTags($tags);
     }
@@ -29,7 +39,6 @@ class Contact
     public function setData(array $data)
     {
         ksort($data);
-
 
         foreach ($data as $key => $val) {
 
@@ -116,6 +125,17 @@ class Contact
         return $this->id;
     }
 
+    public function setLastEditDate(DateTime $date)
+    {
+        $this->lastEditDate = $date;
+        return $this;
+    }
+
+    public function getLastEditDate()
+    {
+        return $this->lastEditDate;
+    }
+
     public function resetStatus()
     {
         $this->isCreated = false;
@@ -148,7 +168,6 @@ class Contact
     {
         return $this->isUpdated;
     }
-
 
     public function setIsFailed()
     {
@@ -192,6 +211,7 @@ class Contact
 
     public function setErrorMessage($msg)
     {
+        $this->setIsFailed();
         $this->errorMessage = $msg;
         return $this;
     }
