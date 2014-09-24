@@ -105,6 +105,9 @@ class Contact
     public function setTags(array $tags)
     {
         sort($tags);
+        foreach ($tags as &$tag) {
+            $tag = (int)$tag;
+        }
         $this->tags = $tags;
         return $this;
     }
