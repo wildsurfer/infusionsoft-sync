@@ -60,7 +60,7 @@ class Contact
             case 'Phone3':
             case 'Phone4':
             case 'Phone5':
-                $phone = preg_replace('/[^0-9]/', '', $val);
+                $phone = preg_replace('/[^0-9]+/', '', $val);
                 $length = strlen($phone);
 
                 if ($length == 10) {
